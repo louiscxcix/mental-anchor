@@ -34,6 +34,7 @@ def generate_cue_card(sport, situation, mental_state, desired_state):
     """AI 모델을 호출하여 과정단서 카드를 생성하는 함수"""
     model = genai.GenerativeModel('gemini-1.5-flash')
 
+    # AI에게 전달할 프롬프트를 수정하여 더 창의적인 단서를 유도합니다.
     prompt = f"""
     당신은 스포츠 심리학 지식과 IT 개발 능력을 겸비한 전문 AI 어시스턴트입니다.
     사용자가 입력한 내용을 바탕으로, 압박감을 느끼는 스포츠 선수를 위한 '과정단서 카드'를 생성해주세요.
@@ -52,7 +53,9 @@ def generate_cue_card(sport, situation, mental_state, desired_state):
 
     1.  **핵심 문제 파악:** '부정적인 생각과 감정'을 분석하여 근본적인 불안 요소를 정의합니다. (예: 실패에 대한 두려움, 과도한 책임감)
     2.  **'컨트롤 전략' 수립:** 파악된 문제와 '원하는 모습'을 결합하여, 시합 전체를 관통하는 상위 레벨의 정신적 원칙을 1~2문장으로 생성합니다. 통제 불가능한 '결과'에서 통제 가능한 '과정'으로 초점을 옮기는 내용이 포함되어야 합니다.
-    3.  **'과정 단서' 도출:** '구체적인 상황'과 '종목' 특성을 고려하여, 부정적인 신체/심리 반응을 직접적으로 제어하고 긍정적 행동에 집중하게 할 짧고 명료한 행동 지침을 3~4개 생성합니다. 각 단서는 번호와 함께 (키워드) 형식으로 시작해야 합니다.
+    3.  **'과정 단서' 도출:** '구체적인 상황'과 '종목' 특성을 심층적으로 분석하여, 선수가 즉시 실행할 수 있는 창의적이고 효과적인 행동 지침을 3~4개 생성합니다.
+        * **키워드 생성:** (호흡), (감각), (시선), (실행)과 같은 예시에 얽매이지 말고, 상황에 가장 적합한 자신만의 키워드를 만드세요. 예를 들어, (리듬), (타겟), (이완), (폭발) 등 다양하고 창의적인 키워드를 사용할 수 있습니다.
+        * **형식:** 각 단서는 `번호. (키워드) 행동 지침` 형식을 반드시 따라야 합니다.
 
     **[결과물 출력 형식 예시]**
 
@@ -86,7 +89,9 @@ def parse_and_format_card_html(markdown_text):
             if not in_list:
                 processed_lines.append('<ul>')
                 in_list = True
-            processed_lines.append(f'<li>{line.strip()}</li>')
+            # (키워드) 부분을 <strong> 태그로 감싸서 강조
+            line_content = re.sub(r'(\(.*?\))', r'<strong>\1</strong>', line.strip())
+            processed_lines.append(f'<li>{line_content}</li>')
         else:
             if in_list:
                 processed_lines.append('</ul>')
@@ -105,7 +110,7 @@ st.divider()
 st.header("Phase 1: 당신의 상황과 마음 들여다보기")
 
 with st.form("input_form"):
-    sport = st.selectbox('**어떤 종목의 선수이신가요?**', ('축구', '농구', '야구', '양궁', '골프', '테니스', '수영', '육상', '격투기', 'e스포츠', '기타'))
+    sport = st.selectbox('**어떤 종목의 선수이신가요?**', ('축구', '농구', '야구', '골프', '테니스', '탁구', '양궁', '수영', '육상', '격투기', 'e스포츠', '기타'))
     situation = st.text_area('**어떤 구체적인 순간에 도움이 필요하신가요?**', placeholder='예: 중요한 경기 후반, 결정적인 승부차기 키커로 나섰을 때')
     mental_state = st.text_area('**그 순간, 어떤 부정적인 생각과 감정이 드나요?**', placeholder='예: 내가 실축하면 우리 팀이 패배할 것 같아 두렵다. 갑자기 다리에 힘이 풀리고 숨이 가빠진다.')
     desired_state = st.text_area('**그 상황에서 바라는 당신의 이상적인 모습은 무엇인가요?**', placeholder='예: 결과에 대한 생각은 잊고, 자신감 있고 과감하게 내가 준비한 킥을 하고 싶다.')
@@ -138,7 +143,10 @@ if 'generated_card' in st.session_state and st.session_state.generated_card:
     <button id="save-btn">이미지로 저장 📸</button>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+
         #capture-card {{
+            font-family: 'Noto Sans KR', sans-serif;
             border: 2px solid #007bff;
             border-radius: 15px;
             padding: 25px;
@@ -147,6 +155,8 @@ if 'generated_card' in st.session_state and st.session_state.generated_card:
             color: #333;
         }}
         #capture-card h3 {{
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 700;
             color: #0056b3;
             border-bottom: 2px solid #0056b3;
             padding-bottom: 10px;
@@ -156,12 +166,16 @@ if 'generated_card' in st.session_state and st.session_state.generated_card:
         }}
         #capture-card li {{
             margin-bottom: 10px;
-            line-height: 1.6;
+            line-height: 1.7;
+        }}
+        #capture-card strong {{
+            color: #d9534f; /* 키워드 색상 강조 */
         }}
         #save-btn {{
             display: block;
             width: 100%;
             padding: 12px;
+            font-family: 'Noto Sans KR', sans-serif;
             font-size: 18px;
             font-weight: bold;
             color: white;
@@ -181,14 +195,13 @@ if 'generated_card' in st.session_state and st.session_state.generated_card:
     document.getElementById("save-btn").onclick = function() {{
         const cardElement = document.getElementById("capture-card");
         
-        // 로딩 인디케이터 표시
         const originalButtonText = this.innerHTML;
         this.innerHTML = "저장 중...";
         this.disabled = true;
 
         html2canvas(cardElement, {{
             useCORS: true,
-            scale: 2 // 해상도를 2배로 높여 이미지 품질 개선
+            scale: 2
         }}).then(canvas => {{
             const image = canvas.toDataURL("image/png");
             const link = document.createElement("a");
@@ -198,7 +211,6 @@ if 'generated_card' in st.session_state and st.session_state.generated_card:
             link.click();
             document.body.removeChild(link);
 
-            // 버튼 원래 상태로 복구
             this.innerHTML = originalButtonText;
             this.disabled = false;
         }});
