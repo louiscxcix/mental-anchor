@@ -2,11 +2,11 @@ import streamlit as st
 import google.generativeai as genai
 import re
 
-# --- 페이지 기본 설정 ---
+# --- 페이지 기본 설정 (넓은 레이아웃으로 변경) ---
 st.set_page_config(
     page_title="AI 멘탈 코치",
     page_icon="🏃‍♂️",
-    layout="centered",
+    layout="wide", # 'centered'에서 'wide'로 변경하여 반응형 공간 확보
     initial_sidebar_state="auto",
 )
 
@@ -30,16 +30,15 @@ else:
 
 
 # --- AI 모델 호출 함수 ---
-def generate_cue_card(sport, situation, mental_state, desired_state):
+def generate_cue_card(sport, situation, mental_state, desired_state, success_key):
     """AI 모델을 호출하여 과정단서 카드를 생성하는 함수"""
     model = genai.GenerativeModel('gemini-1.5-flash')
 
-    # AI에게 전달할 프롬프트를 수정하여 더 창의적인 단서를 유도합니다.
+    # AI에게 전달할 프롬프트를 수정하여 더 구체적이고 질적인 단서를 유도합니다.
     prompt = f"""
     당신은 스포츠 심리학 지식과 IT 개발 능력을 겸비한 전문 AI 어시스턴트입니다.
     사용자가 입력한 내용을 바탕으로, 압박감을 느끼는 스포츠 선수를 위한 '과정단서 카드'를 생성해주세요.
     결과물은 '컨트롤 전략'과 '과정 단서' 두 부분으로 명확히 구분하여, 다른 설명 없이 카드 내용만 생성해주세요.
-    결과물 형식은 아래 예시를 반드시 따라주세요.
 
     ---
     **[사용자 입력 정보]**
@@ -47,15 +46,19 @@ def generate_cue_card(sport, situation, mental_state, desired_state):
     * **구체적인 상황:** {situation}
     * **부정적인 생각과 감정:** {mental_state}
     * **원하는 모습:** {desired_state}
+    * **성공의 열쇠 (사용자 힌트):** {success_key}
     ---
 
     **[분석 및 생성 가이드라인]**
 
-    1.  **핵심 문제 파악:** '부정적인 생각과 감정'을 분석하여 근본적인 불안 요소를 정의합니다. (예: 실패에 대한 두려움, 과도한 책임감)
-    2.  **'컨트롤 전략' 수립:** 파악된 문제와 '원하는 모습'을 결합하여, 시합 전체를 관통하는 상위 레벨의 정신적 원칙을 1~2문장으로 생성합니다. 통제 불가능한 '결과'에서 통제 가능한 '과정'으로 초점을 옮기는 내용이 포함되어야 합니다.
-    3.  **'과정 단서' 도출:** '구체적인 상황'과 '종목' 특성을 심층적으로 분석하여, 선수가 즉시 실행할 수 있는 창의적이고 효과적인 행동 지침을 3~4개 생성합니다.
-        * **키워드 생성:** (호흡), (감각), (시선), (실행)과 같은 예시에 얽매이지 말고, 상황에 가장 적합한 자신만의 키워드를 만드세요. 예를 들어, (리듬), (타겟), (이완), (폭발) 등 다양하고 창의적인 키워드를 사용할 수 있습니다.
-        * **형식:** 각 단서는 `번호. (키워드) 행동 지침` 형식을 반드시 따라야 합니다.
+    1.  **'컨트롤 전략' 수립:** 사용자의 '부정적인 생각'과 '원하는 모습'을 결합하여, 통제 불가능한 '결과'에서 통제 가능한 '과정'으로 초점을 옮기는 상위 레벨의 정신적 원칙을 1~2문장으로 생성합니다.
+
+    2.  **'과정 단서' 도출 (가장 중요):**
+        * **루틴 지양:** '호흡 → 감각 → 시선 → 실행' 같은 단계별 루틴을 만들지 마세요.
+        * **지시어 형식 단서 생성:** 대신, 선수가 스스로에게 명령하듯 말할 수 있는 **구체적인 지시어 형식**의 단서를 3~4개 생성합니다. "이것 하나만 이렇게 하자"고 다짐하는 느낌을 주는, 실행 중심의 단서를 제공해야 합니다.
+        * **예시:** "손목에 힘 빼고, 가볍게 스윙하자!", "고개는 끝까지 고정하고, 시선은 공에만 두자.", "결정구 고민 말고, 첫 느낌을 믿고 던지자." 와 같이 행동을 직접적으로 유도하는 지시어를 만드세요.
+        * **힌트 활용:** 사용자가 '성공의 열쇠'를 입력했다면, 이를 가장 중요한 힌트로 삼아 과정 단서를 더욱 개인화하고 구체화하세요.
+        * **형식:** 각 단서는 `번호. (핵심 키워드) 행동 지침` 형식을 반드시 따라야 합니다. 키워드는 창의적으로 만드세요.
 
     **[결과물 출력 형식 예시]**
 
@@ -63,10 +66,10 @@ def generate_cue_card(sport, situation, mental_state, desired_state):
     결과에 대한 책임감은 잠시 내려놓자. 내가 통제할 수 있는 것은 오직 나의 준비와 발끝뿐이다. 과정을 믿고 과감하게!
 
     ### 과정 단서 (지금 할 나의 행동)
-    1. (호흡) 공을 내려놓고, 코로 깊게 마시고 입으로 길게 내쉰다.
-    2. (감각) 디딤발로 땅을 단단히 느끼고, 발끝에 힘을 모은다.
-    3. (시선) 내가 정한 골대 구석의 한 점만 응시한다.
-    4. (실행) 망설임 없이, 공을 꿰뚫는다는 느낌으로 임팩트!
+    1. (과감함) 첫 느낌을 믿고, 망설임 없이 스윙하자!
+    2. (타점) 공의 왼쪽 아래, 정확히 그 한 점만 노리자.
+    3. (리듬) 나만의 스텝, '하나-둘-셋' 리듬에만 집중하자.
+    4. (이완) 어깨와 손목의 힘은 완전히 빼고, 부드럽게 가자.
     """
 
     try:
@@ -78,9 +81,7 @@ def generate_cue_card(sport, situation, mental_state, desired_state):
 
 def parse_and_format_card_html(markdown_text):
     """AI가 생성한 마크다운 텍스트를 HTML로 변환하는 함수"""
-    # ### 헤더를 <h3> 태그로 변환
     html_content = re.sub(r'### (.*?)\n', r'<h3>\1</h3>', markdown_text)
-    # 줄바꿈을 <br> 태그로 변환하되, 리스트 항목은 제외
     lines = html_content.split('\n')
     processed_lines = []
     in_list = False
@@ -89,7 +90,6 @@ def parse_and_format_card_html(markdown_text):
             if not in_list:
                 processed_lines.append('<ul>')
                 in_list = True
-            # (키워드) 부분을 <strong> 태그로 감싸서 강조
             line_content = re.sub(r'(\(.*?\))', r'<strong>\1</strong>', line.strip())
             processed_lines.append(f'<li>{line_content}</li>')
         else:
@@ -110,48 +110,61 @@ st.divider()
 st.header("Phase 1: 당신의 상황과 마음 들여다보기")
 
 with st.form("input_form"):
-    sport = st.selectbox('**어떤 종목의 선수이신가요?**', ('축구', '농구', '야구', '골프', '테니스', '탁구', '양궁', '수영', '육상', '격투기', 'e스포츠', '기타'))
-    situation = st.text_area('**어떤 구체적인 순간에 도움이 필요하신가요?**', placeholder='예: 중요한 경기 후반, 결정적인 승부차기 키커로 나섰을 때')
-    mental_state = st.text_area('**그 순간, 어떤 부정적인 생각과 감정이 드나요?**', placeholder='예: 내가 실축하면 우리 팀이 패배할 것 같아 두렵다. 갑자기 다리에 힘이 풀리고 숨이 가빠진다.')
-    desired_state = st.text_area('**그 상황에서 바라는 당신의 이상적인 모습은 무엇인가요?**', placeholder='예: 결과에 대한 생각은 잊고, 자신감 있고 과감하게 내가 준비한 킥을 하고 싶다.')
-    submitted = st.form_submit_button("나만의 과정단서 카드 만들기", type="primary")
+    # 입력 필드를 2단으로 나누어 배치
+    col1, col2 = st.columns(2)
+    with col1:
+        sport = st.selectbox('**1. 어떤 종목의 선수이신가요?**', ('축구', '농구', '야구', '골프', '테니스', '탁구', '양궁', '수영', '육상', '격투기', 'e스포츠', '기타'))
+        situation = st.text_area('**2. 어떤 구체적인 순간에 도움이 필요하신가요?**', placeholder='예: 중요한 경기 후반, 결정적인 승부차기 키커로 나섰을 때', height=150)
+        desired_state = st.text_area('**3. 그 상황에서 바라는 당신의 이상적인 모습은 무엇인가요?**', placeholder='예: 결과에 대한 생각은 잊고, 자신감 있고 과감하게 내가 준비한 킥을 하고 싶다.', height=150)
+
+    with col2:
+        mental_state = st.text_area('**4. 그 순간, 어떤 부정적인 생각과 감정이 드나요?**', placeholder='예: 내가 실축하면 우리 팀이 패배할 것 같아 두렵다. 갑자기 다리에 힘이 풀리고 숨이 가빠진다.', height=150)
+        # '성공의 열쇠' 입력 필드 추가
+        success_key = st.text_area('**5. 성공의 열쇠 (선택 사항):** 이 동작이 잘 될 때, 특별히 신경 썼던 \'한 가지\'가 있다면 알려주세요.', placeholder='예: 공의 오른쪽 면만 보고 임팩트했다. / 어깨에 힘을 완전히 빼고 휘둘렀다.', height=150)
+
+    submitted = st.form_submit_button("나만의 과정단서 카드 만들기", type="primary", use_container_width=True)
 
 if submitted:
     if not all([sport, situation, mental_state, desired_state]):
-        st.error("모든 항목을 정확히 입력해주세요.")
+        st.error("모든 필수 항목(1-4번)을 정확히 입력해주세요.")
     else:
         with st.spinner('AI 멘탈 코치가 당신을 위한 카드를 만들고 있습니다...'):
-            generated_card = generate_cue_card(sport, situation, mental_state, desired_state)
+            generated_card = generate_cue_card(sport, situation, mental_state, desired_state, success_key)
             if generated_card:
-                # 생성된 카드를 세션 상태에 저장
                 st.session_state.generated_card = generated_card
 
-# 세션 상태에 저장된 카드가 있으면 화면에 표시
 if 'generated_card' in st.session_state and st.session_state.generated_card:
     st.divider()
     st.header("Phase 2: 당신을 위한 AI 과정단서 카드 🃏")
 
-    # AI가 생성한 마크다운 텍스트를 HTML로 변환
     card_html_content = parse_and_format_card_html(st.session_state.generated_card)
 
-    # 카드 디자인과 저장 버튼을 포함한 HTML 컴포넌트
     card_component_html = f"""
-    <div id="capture-card">
-        {card_html_content}
+    <div id="capture-card-wrapper">
+        <div id="capture-card">
+            {card_html_content}
+        </div>
     </div>
     <br>
-    <button id="save-btn">이미지로 저장 📸</button>
+    <div id="button-wrapper">
+        <button id="save-btn">이미지로 저장 📸</button>
+    </div>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        #capture-card-wrapper, #button-wrapper {{
+            max-width: 800px; /* 최대 너비 설정 */
+            margin: auto; /* 중앙 정렬 */
+        }}
 
         #capture-card {{
             font-family: 'Noto Sans KR', sans-serif;
             border: 2px solid #007bff;
             border-radius: 15px;
             padding: 25px;
-            background-color: #f8f9fa;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #ffffff;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
             color: #333;
         }}
         #capture-card h3 {{
@@ -160,16 +173,21 @@ if 'generated_card' in st.session_state and st.session_state.generated_card:
             color: #0056b3;
             border-bottom: 2px solid #0056b3;
             padding-bottom: 10px;
+            margin-top: 0;
         }}
         #capture-card ul {{
             padding-left: 20px;
+            list-style-type: none;
         }}
         #capture-card li {{
-            margin-bottom: 10px;
-            line-height: 1.7;
+            margin-bottom: 12px;
+            line-height: 1.8;
+            font-size: 1.1em;
         }}
         #capture-card strong {{
             color: #d9534f; /* 키워드 색상 강조 */
+            font-weight: 700;
+            margin-right: 8px;
         }}
         #save-btn {{
             display: block;
@@ -201,7 +219,8 @@ if 'generated_card' in st.session_state and st.session_state.generated_card:
 
         html2canvas(cardElement, {{
             useCORS: true,
-            scale: 2
+            scale: 2,
+            backgroundColor: null // 투명 배경으로 캡처
         }}).then(canvas => {{
             const image = canvas.toDataURL("image/png");
             const link = document.createElement("a");
