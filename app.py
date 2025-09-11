@@ -33,20 +33,20 @@ def apply_ui_styles():
                 --primary-color: #2BA7D1;
                 --black-color: #0D1628;
                 --secondary-color: #86929A;
-                --divider-color: #F1F1F1;
-                --icon-bg-color: rgba(12, 124, 162, 0.04);
+                --divider-color: #E5E7EB;
             }
 
             .stApp {
-                background-color: #F1F2F5; /* 수정된 배경색 */
+                background-color: #F1F2F5; /* 페이지 전체 배경색 */
             }
             
+            /* 메인 컨텐츠 영역의 박스 제거 */
             div.block-container {
-                padding: 2rem 1rem 2rem 1rem !important;
+                padding: 2rem 1.5rem 2.5rem 1.5rem !important;
                 max-width: 720px;
-                background-color: #ffffff; /* 메인 컨텐츠 영역 배경 흰색으로 */
-                border-radius: 16px; /* 컨텐츠 영역에 라운드 처리 */
-                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                background-color: transparent; /* 배경색 제거 */
+                box-shadow: none; /* 그림자 제거 */
+                border-radius: 0;
             }
             
             header[data-testid="stHeader"] { display: none !important; }
@@ -57,7 +57,7 @@ def apply_ui_styles():
 
             .icon-container {
                 width: 68px; height: 68px;
-                background-color: var(--icon-bg-color);
+                background-color: rgba(43, 167, 209, 0.1);
                 border-radius: 50%;
                 display: flex; align-items: center; justify-content: center;
                 margin-bottom: 12px;
@@ -78,16 +78,18 @@ def apply_ui_styles():
                 margin-bottom: 12px;
             }
 
-            /* Streamlit 위젯 스타일 오버라이드 */
-            .stTextArea textarea, .stSelectbox > div {
-                background-color: #F1F2F5; /* 입력창 배경색을 앱 배경색과 통일 */
-                border: 1px solid #D1D5DB;
-                border-radius: 12px;
+            /* 입력창 배경을 흰색으로 변경하여 통일감 부여 */
+            .stTextArea textarea, 
+            div[data-baseweb="select"] > div {
+                background-color: #ffffff !important;
+                border: 1px solid var(--divider-color) !important;
+                border-radius: 12px !important;
             }
             
+            /* 메인 생성 버튼 스타일 */
             .stButton>button {
-                background-color: #2BA7D1; /* 버튼 색상 명시적으로 수정 */
-                color: white;
+                background-color: var(--primary-color) !important;
+                color: white !important;
                 font-size: 16px; font-weight: 700;
                 border-radius: 12px; padding: 14px 0;
                 border: none;
@@ -96,7 +98,10 @@ def apply_ui_styles():
 
             /* Divider 스타일 */
             hr {
-                margin: 2rem 0 !important;
+                margin: 1.5rem 0 !important;
+                background-color: var(--divider-color);
+                height: 1px;
+                border: none;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -303,3 +308,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
