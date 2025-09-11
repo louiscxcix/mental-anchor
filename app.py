@@ -40,13 +40,17 @@ def apply_ui_styles():
                 background-color: #F1F2F5; /* 페이지 전체 배경색 */
             }
             
-            /* 메인 컨텐츠 영역의 박스 제거 */
+            /* 메인 컨텐츠 영역 스타일 수정 */
             div.block-container {
                 padding: 2rem 1.5rem 2.5rem 1.5rem !important;
                 max-width: 720px;
-                background-color: transparent; /* 배경색 제거 */
-                box-shadow: none; /* 그림자 제거 */
-                border-radius: 0;
+                background-color: #ffffff; /* 흰색 배경 적용 */
+                border-radius: 16px; /* 라운드 처리 */
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* 그림자 추가 */
+                
+                /* 왼쪽 정렬을 위한 스타일 추가 */
+                margin-left: 0 !important;
+                margin-right: auto !important;
             }
             
             header[data-testid="stHeader"] { display: none !important; }
