@@ -38,7 +38,7 @@ def apply_ui_styles():
             }
 
             .stApp {
-                background-color: #ffffff;
+                background-color: #F1F2F5; /* 수정된 배경색 */
             }
             
             div.block-container {
@@ -82,13 +82,14 @@ def apply_ui_styles():
 
             /* Streamlit 위젯 스타일 오버라이드 */
             .stTextArea textarea, .stSelectbox > div {
-                background-color: #f9fafb;
+                background-color: #ffffff; /* 입력창 배경 흰색으로 변경 */
                 border: 1px solid #D1D5DB;
                 border-radius: 12px;
             }
             
             .stButton>button {
-                background-color: var(--primary-color); color: white;
+                background-color: #2BA7D1; /* 버튼 색상 명시적으로 수정 */
+                color: white;
                 font-size: 16px; font-weight: 700;
                 border-radius: 12px; padding: 14px 0;
                 border: none;
@@ -285,7 +286,7 @@ def main():
         success_key = st.text_area('success_key', placeholder="이 동작이 잘 될 때, 특별히 신경 썼던 '한 가지'가 있다면 알려주세요.", height=100, label_visibility="collapsed")
         st.markdown('</div>', unsafe_allow_html=True)
 
-        submitted = st.form_submit_button("나만의 과정단서 카드 만들기")
+        submitted = st.form_submit_button("나만의 과정단서 카드 만들기", use_container_width=True) # 전체 너비로 수정
 
     if submitted:
         if not all([sport, situation, mental_state, desired_state]):
