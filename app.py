@@ -40,15 +40,15 @@ def apply_ui_styles():
                 background-color: #F1F2F5; /* 페이지 전체 배경색 */
             }
             
-            /* 메인 컨텐츠 영역 스타일 수정 */
+            /* 메인 컨텐츠 영역의 흰색 박스 제거 */
             div.block-container {
                 padding: 2rem 1.5rem 2.5rem 1.5rem !important;
                 max-width: 720px;
-                background-color: #ffffff; /* 흰색 배경 적용 */
-                border-radius: 16px; /* 라운드 처리 */
-                box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* 그림자 추가 */
+                background-color: transparent; /* 흰색 배경 제거 */
+                border-radius: 0; /* 라운드 제거 */
+                box-shadow: none; /* 그림자 제거 */
                 
-                /* 왼쪽 정렬을 위한 스타일 추가 */
+                /* 왼쪽 정렬 유지 */
                 margin-left: 0 !important;
                 margin-right: auto !important;
             }
@@ -82,7 +82,7 @@ def apply_ui_styles():
                 margin-bottom: 12px;
             }
 
-            /* 입력창 배경을 흰색으로 변경하여 통일감 부여 */
+            /* 입력창 배경을 흰색으로 변경하여 구분감 부여 */
             .stTextArea textarea, 
             div[data-baseweb="select"] > div {
                 background-color: #ffffff !important;
