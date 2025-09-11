@@ -86,13 +86,13 @@ def apply_ui_styles():
                 border-radius: 12px !important;
             }
             
-            /* 메인 생성 버튼 스타일 */
-            .stButton>button {
+            /* 메인 생성 버튼 스타일 수정 */
+            div[data-testid="stFormSubmitButton"] button {
                 background-color: var(--primary-color) !important;
                 color: white !important;
                 font-size: 16px; font-weight: 700;
                 border-radius: 12px; padding: 14px 0;
-                border: none;
+                border: none !important;
                 box-shadow: 0px 5px 10px rgba(43, 167, 209, 0.2);
             }
 
