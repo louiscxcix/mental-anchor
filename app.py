@@ -44,6 +44,9 @@ def apply_ui_styles():
             div.block-container {
                 padding: 2rem 1rem 2rem 1rem !important;
                 max-width: 720px;
+                background-color: #ffffff; /* 메인 컨텐츠 영역 배경 흰색으로 */
+                border-radius: 16px; /* 컨텐츠 영역에 라운드 처리 */
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             }
             
             header[data-testid="stHeader"] { display: none !important; }
@@ -70,11 +73,6 @@ def apply_ui_styles():
                 line-height: 22px; margin-bottom: 32px;
             }
             
-            .input-section {
-                padding-bottom: 20px;
-                margin-bottom: 20px;
-                border-bottom: 1px solid var(--divider-color);
-            }
             .input-title {
                 font-size: 18px; font-weight: 700; color: var(--black-color);
                 margin-bottom: 12px;
@@ -82,7 +80,7 @@ def apply_ui_styles():
 
             /* Streamlit 위젯 스타일 오버라이드 */
             .stTextArea textarea, .stSelectbox > div {
-                background-color: #ffffff; /* 입력창 배경 흰색으로 변경 */
+                background-color: #F1F2F5; /* 입력창 배경색을 앱 배경색과 통일 */
                 border: 1px solid #D1D5DB;
                 border-radius: 12px;
             }
@@ -94,6 +92,11 @@ def apply_ui_styles():
                 border-radius: 12px; padding: 14px 0;
                 border: none;
                 box-shadow: 0px 5px 10px rgba(43, 167, 209, 0.2);
+            }
+
+            /* Divider 스타일 */
+            hr {
+                margin: 2rem 0 !important;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -261,36 +264,31 @@ def main():
 
     # 입력 폼
     with st.form("input_form"):
-        st.markdown('<div class="input-section">', unsafe_allow_html=True)
-        st.markdown('<p class="input-title">1. 어떤 종목의 선수이신가요?</p>', unsafe_allow_html=True)
+        st.markdown('<p class="input-title">어떤 종목의 선수이신가요?</p>', unsafe_allow_html=True)
         sport = st.selectbox('sport', ('축구', '농구', '야구', '골프', '테니스', '탁구', '양궁', '수영', '육상', '격투기', 'e스포츠', '기타'), label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.divider()
 
-        st.markdown('<div class="input-section">', unsafe_allow_html=True)
-        st.markdown('<p class="input-title">2. 어떤 구체적인 순간에 도움이 필요하신가요?</p>', unsafe_allow_html=True)
+        st.markdown('<p class="input-title">어떤 구체적인 순간에 도움이 필요하신가요?</p>', unsafe_allow_html=True)
         situation = st.text_area('situation', placeholder='예: 중요한 경기 후반, 결정적인 승부차기 키커로 나섰을 때', height=100, label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.divider()
 
-        st.markdown('<div class="input-section">', unsafe_allow_html=True)
-        st.markdown('<p class="input-title">3. 그 상황에서 바라는 당신의 이상적인 모습은 무엇인가요?</p>', unsafe_allow_html=True)
+        st.markdown('<p class="input-title">그 상황에서 바라는 당신의 이상적인 모습은 무엇인가요?</p>', unsafe_allow_html=True)
         desired_state = st.text_area('desired_state', placeholder='예: 결과에 대한 생각은 잊고, 자신감 있고 과감하게 내가 준비한 킥을 하고 싶다.', height=100, label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.divider()
 
-        st.markdown('<div class="input-section">', unsafe_allow_html=True)
-        st.markdown('<p class="input-title">4. 그 순간, 어떤 부정적인 생각과 감정이 드나요?</p>', unsafe_allow_html=True)
+        st.markdown('<p class="input-title">그 순간, 어떤 부정적인 생각과 감정이 드나요?</p>', unsafe_allow_html=True)
         mental_state = st.text_area('mental_state', placeholder='예: 내가 실축하면 우리 팀이 패배할 것 같아 두렵다. 갑자기 다리에 힘이 풀리고 숨이 가빠진다.', height=100, label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.divider()
         
-        st.markdown('<div class="input-section" style="border-bottom:none;">', unsafe_allow_html=True)
-        st.markdown('<p class="input-title">5. 성공의 열쇠 (선택 사항)</p>', unsafe_allow_html=True)
+        st.markdown('<p class="input-title">성공의 열쇠 (선택 사항)</p>', unsafe_allow_html=True)
         success_key = st.text_area('success_key', placeholder="이 동작이 잘 될 때, 특별히 신경 썼던 '한 가지'가 있다면 알려주세요.", height=100, label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        submitted = st.form_submit_button("나만의 과정단서 카드 만들기", use_container_width=True) # 전체 너비로 수정
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        submitted = st.form_submit_button("나만의 과정단서 카드 만들기", use_container_width=True)
 
     if submitted:
         if not all([sport, situation, mental_state, desired_state]):
-            st.warning("필수 항목(1-4번)을 모두 입력해주세요.")
+            st.warning("필수 항목(선택 사항 제외)을 모두 입력해주세요.")
         else:
             with st.spinner('AI 멘탈 코치가 당신을 위한 카드를 만들고 있습니다...'):
                 generated_card = generate_cue_card(sport, situation, mental_state, desired_state, success_key)
@@ -305,4 +303,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
