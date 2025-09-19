@@ -1,16 +1,19 @@
-import streamlit as st
-import google.generativeai as genai
-import re
 import base64
+import os
+import re
 from pathlib import Path
+
+import google.generativeai as genai
+import streamlit as st
 
 # --- 페이지 기본 설정 ---
 st.set_page_config(
     page_title="AI 멘탈 코치",
     page_icon="🏃‍♂️",
-    layout="centered", # 반응형을 위해 centered 사용
+    layout="centered",  # 반응형을 위해 centered 사용
     initial_sidebar_state="auto",
 )
+
 
 # --- 이미지 파일을 Base64로 인코딩하는 함수 ---
 def img_to_base_64(image_path):
@@ -19,13 +22,17 @@ def img_to_base_64(image_path):
         with open(image_path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
     except FileNotFoundError:
-        st.warning(f"아이콘 파일을 찾을 수 없습니다: {image_path}. 아이콘 없이 앱을 실행합니다.")
+        st.warning(
+            f"아이콘 파일을 찾을 수 없습니다: {image_path}. 아이콘 없이 앱을 실행합니다."
+        )
         return None
+
 
 # --- UI 스타일링 함수 ---
 def apply_ui_styles():
     """앱 전체에 적용될 CSS 스타일을 정의합니다."""
-    st.markdown("""
+    st.markdown(
+        """
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
             
@@ -105,13 +112,15 @@ def apply_ui_styles():
                 border: none;
             }
         </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 # --- AI 모델 호출 함수 ---
 def generate_cue_card(sport, situation, mental_state, desired_state, success_key):
     """AI 모델을 호출하여 과정단서 카드를 생성하는 함수"""
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel("gemini-1.5-flash")
     prompt = f"""
     당신은 스포츠 심리학 지식과 IT 개발 능력을 겸비한 전문 AI 어시스턴트입니다.
     사용자가 입력한 내용을 바탕으로, 압박감을 느끼는 스포츠 선수를 위한 '과정단서 카드'를 생성해주세요.
@@ -152,20 +161,25 @@ def generate_cue_card(sport, situation, mental_state, desired_state, success_key
         st.error(f"카드 생성 중 오류가 발생했습니다: {e}")
         return None
 
+
 # --- 결과 카드 표시 및 저장 함수 ---
 def display_and_save_card(card_text):
     """생성된 계획을 카드 형태로 표시하고 이미지 저장 버튼을 추가합니다."""
     # AI 응답 파싱
     try:
-        strategy = card_text.split('### 컨트롤 전략')[1].split('### 과정 단서')[0].strip()
-        cues_raw = card_text.split('### 과정 단서')[1].strip().split('\n')
+        strategy = (
+            card_text.split("### 컨트롤 전략")[1].split("### 과정 단서")[0].strip()
+        )
+        cues_raw = card_text.split("### 과정 단서")[1].strip().split("\n")
         cues_html = ""
         for cue in cues_raw:
-            match = re.match(r'\d+\.\s*(\(.*\))\s*(.*)', cue)
+            match = re.match(r"\d+\.\s*(\(.*\))\s*(.*)", cue)
             if match:
                 keyword = match.group(1)
                 action = match.group(2)
-                cues_html += f'<p class="cue-text"><strong>{keyword}</strong> {action}</p>'
+                cues_html += (
+                    f'<p class="cue-text"><strong>{keyword}</strong> {action}</p>'
+                )
     except IndexError:
         st.error("AI 응답을 처리하는 데 실패했습니다. 다시 시도해주세요.")
         return
@@ -248,64 +262,130 @@ def display_and_save_card(card_text):
     """
     st.components.v1.html(card_component_html, height=700, scrolling=True)
 
+
 # --- 메인 애플리케이션 ---
 def main():
     apply_ui_styles()
 
     icon_path = Path(__file__).parent / "icon.png"
     icon_base64 = img_to_base_64(icon_path)
-    
+
     if icon_base64:
-        st.markdown(f'<div class="icon-container"><img src="data:image/png;base64,{icon_base64}" alt="icon"></div>', unsafe_allow_html=True)
-    
+        st.markdown(
+            f'<div class="icon-container"><img src="data:image/png;base64,{icon_base64}" alt="icon"></div>',
+            unsafe_allow_html=True,
+        )
+
     st.markdown('<p class="title">과정단서 카드</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">중요한 순간, 흔들리는 멘탈을 잡아줄 당신만의 카드.<br>AI 멘탈 코치가 함께합니다.</p>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<p class="subtitle">중요한 순간, 흔들리는 멘탈을 잡아줄 당신만의 카드.<br>AI 멘탈 코치가 함께합니다.</p>',
+        unsafe_allow_html=True,
+    )
+
     # API 키 확인
     try:
-        api_key = st.secrets["GEMINI_API_KEY"]
+        api_key = os.getenv("GEMINI_API_KEY")
     except (FileNotFoundError, KeyError):
         st.sidebar.error("Streamlit Secrets에 'GEMINI_API_KEY'가 설정되지 않았습니다.")
         st.stop()
 
     # 입력 폼
     with st.form("input_form"):
-        st.markdown('<p class="input-title">어떤 종목의 선수이신가요?</p>', unsafe_allow_html=True)
-        sport = st.selectbox('sport', ('축구', '농구', '야구', '골프', '테니스', '탁구', '양궁', '수영', '육상', '격투기', 'e스포츠', '기타'), label_visibility="collapsed")
+        st.markdown(
+            '<p class="input-title">어떤 종목의 선수이신가요?</p>',
+            unsafe_allow_html=True,
+        )
+        sport = st.selectbox(
+            "sport",
+            (
+                "축구",
+                "농구",
+                "야구",
+                "골프",
+                "테니스",
+                "탁구",
+                "양궁",
+                "수영",
+                "육상",
+                "격투기",
+                "e스포츠",
+                "기타",
+            ),
+            label_visibility="collapsed",
+        )
         st.divider()
 
-        st.markdown('<p class="input-title">어떤 구체적인 순간에 도움이 필요하신가요?</p>', unsafe_allow_html=True)
-        situation = st.text_area('situation', placeholder='예: 중요한 경기 후반, 결정적인 승부차기 키커로 나섰을 때', height=100, label_visibility="collapsed")
+        st.markdown(
+            '<p class="input-title">어떤 구체적인 순간에 도움이 필요하신가요?</p>',
+            unsafe_allow_html=True,
+        )
+        situation = st.text_area(
+            "situation",
+            placeholder="예: 중요한 경기 후반, 결정적인 승부차기 키커로 나섰을 때",
+            height=100,
+            label_visibility="collapsed",
+        )
         st.divider()
 
-        st.markdown('<p class="input-title">그 상황에서 바라는 당신의 이상적인 모습은 무엇인가요?</p>', unsafe_allow_html=True)
-        desired_state = st.text_area('desired_state', placeholder='예: 결과에 대한 생각은 잊고, 자신감 있고 과감하게 내가 준비한 킥을 하고 싶다.', height=100, label_visibility="collapsed")
+        st.markdown(
+            '<p class="input-title">그 상황에서 바라는 당신의 이상적인 모습은 무엇인가요?</p>',
+            unsafe_allow_html=True,
+        )
+        desired_state = st.text_area(
+            "desired_state",
+            placeholder="예: 결과에 대한 생각은 잊고, 자신감 있고 과감하게 내가 준비한 킥을 하고 싶다.",
+            height=100,
+            label_visibility="collapsed",
+        )
         st.divider()
 
-        st.markdown('<p class="input-title">그 순간, 어떤 부정적인 생각과 감정이 드나요?</p>', unsafe_allow_html=True)
-        mental_state = st.text_area('mental_state', placeholder='예: 내가 실축하면 우리 팀이 패배할 것 같아 두렵다. 갑자기 다리에 힘이 풀리고 숨이 가빠진다.', height=100, label_visibility="collapsed")
+        st.markdown(
+            '<p class="input-title">그 순간, 어떤 부정적인 생각과 감정이 드나요?</p>',
+            unsafe_allow_html=True,
+        )
+        mental_state = st.text_area(
+            "mental_state",
+            placeholder="예: 내가 실축하면 우리 팀이 패배할 것 같아 두렵다. 갑자기 다리에 힘이 풀리고 숨이 가빠진다.",
+            height=100,
+            label_visibility="collapsed",
+        )
         st.divider()
-        
-        st.markdown('<p class="input-title">성공의 열쇠 (선택 사항)</p>', unsafe_allow_html=True)
-        success_key = st.text_area('success_key', placeholder="이 동작이 잘 될 때, 특별히 신경 썼던 '한 가지'가 있다면 알려주세요.", height=100, label_visibility="collapsed")
-        
+
+        st.markdown(
+            '<p class="input-title">성공의 열쇠 (선택 사항)</p>', unsafe_allow_html=True
+        )
+        success_key = st.text_area(
+            "success_key",
+            placeholder="이 동작이 잘 될 때, 특별히 신경 썼던 '한 가지'가 있다면 알려주세요.",
+            height=100,
+            label_visibility="collapsed",
+        )
+
         st.markdown("<br>", unsafe_allow_html=True)
-        submitted = st.form_submit_button("나만의 과정단서 카드 만들기", use_container_width=True)
+        submitted = st.form_submit_button(
+            "나만의 과정단서 카드 만들기", use_container_width=True
+        )
 
     if submitted:
         if not all([sport, situation, mental_state, desired_state]):
             st.warning("필수 항목(선택 사항 제외)을 모두 입력해주세요.")
         else:
-            with st.spinner('AI 멘탈 코치가 당신을 위한 카드를 만들고 있습니다...'):
-                generated_card = generate_cue_card(sport, situation, mental_state, desired_state, success_key)
+            with st.spinner("AI 멘탈 코치가 당신을 위한 카드를 만들고 있습니다..."):
+                generated_card = generate_cue_card(
+                    sport, situation, mental_state, desired_state, success_key
+                )
                 if generated_card:
                     st.session_state.generated_card = generated_card
-    
+
     # 결과 표시
-    if 'generated_card' in st.session_state and st.session_state.generated_card:
+    if "generated_card" in st.session_state and st.session_state.generated_card:
         st.divider()
-        st.markdown('<p class="title" style="text-align:center; margin-top: 2rem; margin-bottom: 1.5rem;">당신을 위한 AI 과정단서 카드 🃏</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="title" style="text-align:center; margin-top: 2rem; margin-bottom: 1.5rem;">당신을 위한 AI 과정단서 카드 🃏</p>',
+            unsafe_allow_html=True,
+        )
         display_and_save_card(st.session_state.generated_card)
+
 
 if __name__ == "__main__":
     main()
