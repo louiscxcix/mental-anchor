@@ -94,14 +94,21 @@ def apply_ui_styles():
                 border-radius: 12px !important;
             }
             
-            /* 메인 생성 버튼 스타일 수정 */
+            /* 메인 생성 버튼 스타일 - Figma Design */
             div[data-testid="stFormSubmitButton"] button {
-                background-color: var(--primary-color) !important;
+                background: linear-gradient(135deg, rgba(98, 120.20, 246, 0.20) 0%, rgba(29, 48, 78, 0) 100%), var(--primary-color) !important;
                 color: white !important;
-                font-size: 16px; font-weight: 700;
-                border-radius: 12px; padding: 14px 0;
+                font-size: 14px; font-weight: 400;
+                border-radius: 12px; padding: 14px 36px;
                 border: none !important;
-                box-shadow: 0px 5px 10px rgba(43, 167, 209, 0.2);
+                box-shadow: 0px 5px 10px rgba(26, 26, 26, 0.10);
+                transition: all 0.3s ease;
+            }
+
+            div[data-testid="stFormSubmitButton"] button:hover {
+                background: linear-gradient(135deg, rgba(98, 120.20, 246, 0.30) 0%, rgba(29, 48, 78, 0) 100%), #1A8BB0 !important;
+                box-shadow: 0px 6px 14px rgba(26, 26, 26, 0.15);
+                transform: translateY(-2px);
             }
 
             /* Divider 스타일 */
@@ -120,7 +127,7 @@ def apply_ui_styles():
 # --- AI 모델 호출 함수 ---
 def generate_cue_card(sport, situation, mental_state, desired_state, success_key):
     """AI 모델을 호출하여 과정단서 카드를 생성하는 함수"""
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     prompt = f"""
     당신은 스포츠 심리학 지식과 IT 개발 능력을 겸비한 전문 AI 어시스턴트입니다.
     사용자가 입력한 내용을 바탕으로, 압박감을 느끼는 스포츠 선수를 위한 '과정단서 카드'를 생성해주세요.
